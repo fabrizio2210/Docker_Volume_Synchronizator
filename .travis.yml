@@ -1,0 +1,5 @@
+services:
+  - docker
+
+script:
+  - tests/sync_between_containers.sh
