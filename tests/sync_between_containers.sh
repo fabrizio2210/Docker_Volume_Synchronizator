@@ -8,7 +8,7 @@ docker build -t $image -f docker/x86_64/Dockerfile .
 let RC=$RC+$?
 docker swarm init
 docker network create --driver overlay $network
-docker service create --network $network --name $service --replicas 2 --mount type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock $image wrapper.sh -k y7laMv1RAIJOWft3nRKmHnBYCptjEmNKQ8OrpaltFC1fLneJjmLwe96VEaOla5en -d /opt/data/
+docker service create --detach=false --network $network --name $service --replicas 2 --mount type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock $image wrapper.sh -k y7laMv1RAIJOWft3nRKmHnBYCptjEmNKQ8OrpaltFC1fLneJjmLwe96VEaOla5en -d /opt/data/
 i=0
 for cont in $(docker container ls --format '{{ printf "%s;%s"  .ID .Image }}' | grep $image ) ; do
     if [ $i -gt 0 ] ; then
