@@ -3,3 +3,4 @@ services:
 
 script:
   - tests/sync_between_containers.sh
+  - tests/build_armv7hf.sh

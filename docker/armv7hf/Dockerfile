@@ -1,15 +1,15 @@
 FROM balenalib/armv7hf-debian
 MAINTAINER fabrizio2210
+ENV DOCKERVERSION=18.03.1-ce
+ENV DOCKERARCH=x86_64
 
 RUN [ "cross-build-start" ]
 
-RUN apt-get update && apt-get install -y csync2 lsyncd sed wget && apt-get clean
+RUN apt-get update && apt-get install -y csync2 lsyncd sed curl procps iputils-ping && apt-get clean
 
-RUN wget https://github.com/jpillora/chisel/releases/download/1.2.4/chisel_linux_arm.gz && \
-    gunzip chisel_linux_arm.gz && \
-    mv chisel_linux_arm /usr/local/bin/chisel && \
-    chmod +x /usr/local/bin/chisel
-
+RUN curl -fsSLO https://download.docker.com/linux/static/stable/${DOCKERARCH}/docker-${DOCKERVERSION}.tgz \
+    && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
+    && rm docker-${DOCKERVERSION}.tgz
 
 COPY src/* /usr/local/bin/
 
