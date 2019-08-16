@@ -1,7 +1,7 @@
 FROM balenalib/armv7hf-debian
 MAINTAINER fabrizio2210
 ENV DOCKERVERSION=18.03.1-ce
-ENV DOCKERARCH=x86_64
+ENV DOCKERARCH=armhf
 
 RUN [ "cross-build-start" ]
 
