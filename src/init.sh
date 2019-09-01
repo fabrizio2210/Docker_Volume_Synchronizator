@@ -1,61 +1,15 @@
 #!/bin/bash
 
 
-# input
-# (k) Chiave: stringa base64 ( 8BLJdGh1bD03CLNoAwOwVljJaBj7Qmc9O9q )
-# (d) Directories: lista di directory to sync ( /opt/data/,/opt/data2 )
-# (i) Reset id: elimina l'ID di Csync2
-# (r) Reset DB: eleimina il DB di Csync2
-
-set -x
-key=$CSYNC2_KEY
-dirsString=$CSYNC2_DIRS
-
-while getopts "k:d:" opt; do
-  case $opt in
-		k)
-			key=$(echo $OPTARG | tr -d '[[:space:]]')
-			;;
-		d)
-			dirsString=$(echo $OPTARG | tr -d '[[:space:]]')
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
-      ;;
-  esac
-done
-
-[ -z "$key" ] && echo "Key is missing, define with -k" && exit 1
-[ -z "$dirsString" ] && echo "Dirs is missing, define with -d" && exit 1
-
-#VOLUMES
-# /etc
-# /var/lib/csync2
-# /opt/dataN
-
-csync2CfgDir=/etc/
-lsyncdCfgFile=/etc/lsyncd/lsyncd.conf.lua
-keyFile=/etc/csync2.key
-
 ######
 # MAIN
 
 ###
 # Find the siblings
-for _container in $(docker ps --format '{{printf "%s;%s" .ID .Labels}}' | tr -d ' ') ; do
-    if [ "${_container%;*}" == $(hostname -s) ] ; then
-        for _label in $(echo ${_container#*;} | tr ',' '\n') ; do
-            if echo $_label | grep -q 'com.docker.swarm.service.name' ; then
-                service=${_label#*=}
-            fi
-            if echo $_label | grep -q 'com.docker.swarm.task.name' ; then
-                nodeName=${_label#*=}
-            fi
-        done
-    fi
-done
+service=$(findService)
+nodeName=$(findNodeName)
 [ -z "$service" ] && echo "Container service not found" && exit 2
-nodesString=$(docker service ps --no-trunc -f "desired-state=running" $service --format '{{printf "%s.%s"  .Name .ID }}')
+nodesString=$(findNodeString $service)
 
 
 ###
@@ -72,28 +26,7 @@ fi
 
 ###
 # create csync2 cfg
-mkdir -p $csync2CfgDir
-for __host in $nodesString ; do
-        csync2CfgFile="$csync2CfgDir/csync2_$(echo ${__host} | tr -d '._-').cfg"
-        echo -e "group mycluster \n{" > $csync2CfgFile
-        for _host in $nodesString ; do
-                if [  "$_host" != "$__host" ] ; then
-                        # host slave
-                        echo    "    host ($_host);"   >> $csync2CfgFile
-                else
-                        # host master
-                        echo    "    host $_host;"   >> $csync2CfgFile
-                fi
-        done
-        echo    "    key $keyFile;"  >> $csync2CfgFile
-        for _dir in $(echo $dirsString | tr ',' '\n') ; do
-                echo    "    include $_dir;" >> $csync2CfgFile
-        done
-        echo    "    exclude *~ .*;" >> $csync2CfgFile
-        echo    "}"                  >> $csync2CfgFile
-
-        echo "Wrote \"$csync2CfgFile\""
-done
+createCsyncConfig "$csync2CfgDir" "$nodesString" "$keyFile" "$dirsString"
 
 confName=$(echo $nodeName | tr -d '._-')
 echo "configuration name: $confName"
