@@ -14,7 +14,6 @@ RUN curl -fsSLO https://download.docker.com/linux/static/stable/${DOCKERARCH}/do
 COPY src/* /usr/local/bin/
 
 VOLUME ["/etc", "/var/lib/csync2"]
-EXPOSE 80/tcp
 
 RUN [ "cross-build-end" ]
 
