@@ -75,7 +75,7 @@ function createCsyncConfig {
         for _dir in $(echo $_dirsString | tr ',' '\n') ; do
             echo    "    include $_dir;" >> $_csync2CfgFile
         done
-        echo    "    exclude *~ .*;" >> $_csync2CfgFile
+        echo    "    exclude *~;" >> $_csync2CfgFile
         echo    "}"                  >> $_csync2CfgFile
     
         echo "Wrote \"$_csync2CfgFile\""
