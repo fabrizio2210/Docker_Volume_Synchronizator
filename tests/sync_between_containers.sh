@@ -10,6 +10,7 @@ let RC=$RC+$?
 docker swarm init
 docker network create --driver overlay $network
 docker service create --detach=false --network $network --name $service --replicas $replica --mount type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock $image wrapper.sh -k y7laMv1RAIJOWft3nRKmHnBYCptjEmNKQ8OrpaltFC1fLneJjmLwe96VEaOla5en -d /opt/data/
+sleep 6
 let RC=$RC+$?
 i=0
 for cont in $(docker container ls --format '{{ printf "%s;%s"  .ID .Image }}' | grep $image ) ; do
