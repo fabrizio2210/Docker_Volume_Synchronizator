@@ -1,0 +1,38 @@
+version: '3.3'
+services:
+ db:
+   image: nginx
+   deploy:
+     labels: 
+       async.volumes: 'wp_content_async,db_data'
+       traefik.frontend.rule: 'Host:fabrizio.no-ip.dynu.net'
+   volumes:
+     - db_data:/var/lib/mysql
+     - wp_content_async:/var/www/html
+   restart: always
+   networks: 
+     - sync-network
+ async:
+   image: docker_volume_synchronizer
+   volumes:
+     - db_data:/opt/data
+     - wp_content_async:/opt/data2
+   deploy:
+     mode: global
+     
+volumes:
+  db_data:
+    driver: 'local'
+    driver_opts: 
+      type: 'none'
+      o: 'bind'
+      device: "/tmp/"
+  wp_content_async:
+    driver: 'local'
+    driver_opts: 
+      type: 'none'
+      o: 'bind'
+      device: "/tmp/"
+networks:
+  sync-network:
+    external: true
