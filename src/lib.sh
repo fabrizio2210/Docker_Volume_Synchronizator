@@ -9,6 +9,18 @@ csync2CfgDir=/etc/
 lsyncdCfgFile=/etc/lsyncd/lsyncd.conf.lua
 keyFile=/etc/csync2.key
 
+function findStack {
+    for _container in $(docker ps --format '{{printf "%s;%s" .ID .Labels}}' | tr -d ' ') ; do
+        if [ "${_container%;*}" == $(hostname -s) ] ; then
+            for _label in $(echo ${_container#*;} | tr ',' '\n') ; do
+                if echo $_label | grep -q 'com.docker.stack.namespace' ; then
+                    local _stack=${_label#*=}
+										echo $_stack
+                fi
+            done
+        fi
+    done
+}
 
 ###
 function findService {
@@ -37,8 +49,28 @@ function findNodeName {
     done
 }
 
+# Find the nodes where the service is running in comma separated 
+# $1 -> service
+function findRunningNodes {
+    $_service="$1"
+    docker service ps $_service --format '{{ .Node}}' | tr '\n' ','
+}
 
-# Finde the string that contains all the nodes
+# Find Volumes to sync of a specific service
+# $1 -> service
+function findVolumesToSync {
+    _my_service="$1"
+		for _service in $(docker service ls --format '{{print .ID}}') ; do
+        if [ $_my_service == $_service ] ; then 
+            if echo $(docker service inspect $_service  --format='{{ index .Spec.Labels "async.volumes"}}') | grep -q [[:alpha:]] ; then
+                docker service inspect $_service  --format='{{ index .Spec.Labels "async.volumes"}}'
+            fi
+        fi
+    done
+}
+
+
+# Find the string that contains all the nodes
 # $1 -> name of the service
 function findNodeString {
     local _service=$1
