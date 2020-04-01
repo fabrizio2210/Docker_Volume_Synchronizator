@@ -1,0 +1,46 @@
+version: '3.3'
+services:
+  jenkins:
+    image: jenkins/jenkins
+    deploy:
+      replicas: 1
+      labels: 
+        async.volumes: 'wp_content_async,jenkins_home'
+        traefik.frontend.rule: 'Host:fabrizio.no-ip.dynu.net'
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - wp_content_async:/var/www/html
+    restart: always
+    networks: 
+      - network-async
+  async:
+    image: docker_volume_synchronizer
+    deploy:
+      mode: global
+      labels:
+        async.service: 'jenkins'
+    volumes:
+      - jenkins_home:/opt/data
+      - wp_content_async:/opt/data2
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CSYNC2_KEY: dasbdsfsdfsdfn12dsfsdfsdfsdbc9089nfdg24342hjgfdsa
+     
+volumes:
+  jenkins_home:
+    driver: 'local'
+    driver_opts: 
+      type: 'none'
+      o: 'bind'
+      device: "/var/mount1/"
+  wp_content_async:
+    driver: 'local'
+    driver_opts: 
+      type: 'none'
+      o: 'bind'
+      device: "/var/mount2/"
+networks:
+  network-async:
+    external: true
