@@ -1,16 +1,14 @@
 version: '3.3'
 services:
-  jenkins:
-    image: jenkins/jenkins
+  www:
+    image: nginx
     deploy:
-      replicas: 1
+      replicas: 2
       labels: 
-        async.volumes: 'wp_content_async,jenkins_home'
+        async.volumes: 'wp_content_async,db_data'
         traefik.frontend.rule: 'Host:fabrizio.no-ip.dynu.net'
-    ports:
-      - "8080:8080"
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - db_data:/var/lib/mysql
       - wp_content_async:/var/www/html
     restart: always
     networks: 
@@ -20,16 +18,16 @@ services:
     deploy:
       mode: global
       labels:
-        async.service: 'jenkins'
+        async.service: 'www'
     volumes:
-      - jenkins_home:/opt/data
+      - db_data:/opt/data
       - wp_content_async:/opt/data2
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       CSYNC2_KEY: dasbdsfsdfsdfn12dsfsdfsdfsdbc9089nfdg24342hjgfdsa
      
 volumes:
-  jenkins_home:
+  db_data:
     driver: 'local'
     driver_opts: 
       type: 'none'
