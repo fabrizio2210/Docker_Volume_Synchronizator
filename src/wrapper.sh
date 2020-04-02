@@ -33,6 +33,9 @@ while true ; do
   if [ $oldMaster != $master ] ; then
     if [ $master -eq 1 ] ; then
       echo "This node is a master now"
+      echo "Creation of the lsyncd configuration"
+      mkdir -p $(dirname $lsyncdCfgFile)
+      createLsyncConf "$lsyncdCfgFile" "$nodeName" "$mountpointsToSync"
       stdbuf -oL /usr/bin/lsyncd  -nodaemon -delay 5 $lsyncdCfgFile 2>&1 | sed -u -e 's/^/lsyncd: /' > /dev/stdout 2>&1 &
       lsyncdPid=$!
       echo $lsyncdPid > /var/run/lsyncd.pid
