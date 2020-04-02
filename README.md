@@ -3,7 +3,7 @@ A container that syncronizes volumes within a Swarm cluster in asynchroned way. 
 where you want keep synchronized some volume across the Swarm cluster. For example,
 if you want ensure a simple high availability.
 
-The files are synchronized with 3 seconds.
+The files are synchronized within 3 seconds.
 
 ## Components
 It is composed by Lsync and Csync2.
@@ -28,16 +28,61 @@ The arguments to pass to the `wrapper.sh` script are:
 - `-k` the base64 encoded password for Cysnc2 (it can be a random base64 string)
 
 ### Example
-An example how this container should be use:
+An example of a stack that use this image:
 
+```
+version: '3.3'
+services:
+  jenkins:
+    image: jenkins/jenkins
+    deploy:
+      replicas: 1
+      labels: 
+        async.volumes: 'wp_content_async,jenkins_home'
+        traefik.frontend.rule: 'Host:fabrizio.no-ip.dynu.net'
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - wp_content_async:/var/www/html
+    restart: always
+    networks: 
+      - network-async
+  async:
+    image: fabrizio2210/docker_volume_synchronizer
+    deploy:
+      mode: global
+      labels:
+        async.service: 'jenkins'
+    volumes:
+      - jenkins_home:/opt/data
+      - wp_content_async:/opt/data2
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CSYNC2_KEY: dasbdsfsdfsdfn12dsfsdfsdfsdbc9089nfdg24342hjgfdsa
+     
+volumes:
+  jenkins_home:
+    driver: 'local'
+    driver_opts: 
+      type: 'none'
+      o: 'bind'
+      device: "/var/mount1/"
+  wp_content_async:
+    driver: 'local'
+    driver_opts: 
+      type: 'none'
+      o: 'bind'
+      device: "/var/mount2/"
+networks:
+  network-async:
+    external: true
+```
+These are the commands to use this stack.
 ```
 docker swarm init
 docker network create --driver overlay network-sync
-docker service create \
-    --detach=false --network network-sync \
-    --name volume-sync --mode global \
-    --mount type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock \
-    --mount type=bind,source=/mnt/async,destination=/opt/data \
-    fabrizio2210/docker_volume_synchronizer \
-    wrapper.sh -k fLneJmNKQ8OrpaltFC1y7laMv1RAIJOWftjmLwe96VEaOla5entjE3nRKmHnBYCp -d /opt/data/
+docker stack deploy -c tests/stack.yml test-stack
 ```
+
+
