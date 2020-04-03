@@ -20,7 +20,7 @@ while true ; do
   for pid in $pids ; do
     if ! ps -e | grep -q " $pid " ; then
       echo "PID $pid not found, exit"
-      exit 2
+      [ -z "$DEBUG" ] && exit 2
     fi
   done
  
