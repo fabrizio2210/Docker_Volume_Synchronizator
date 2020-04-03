@@ -87,7 +87,7 @@ fi
 ###
 # Run csync2
 
-confName=$(echo $nodeName | tr -d '._-')
+confName=$(echo $nodeName | tr -d '._-' | tr [A-Z] [a-z])
 stdbuf -oL csync2 -ii -v -N $nodeName -C $confName | sed -u -e 's/^/csync2: /' > /dev/stdout 2>&1 &
 csync2Pid=$!
 echo $csync2Pid > /var/run/csync2.pid

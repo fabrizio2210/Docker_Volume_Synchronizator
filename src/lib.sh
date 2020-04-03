@@ -121,7 +121,7 @@ function createCsyncConfig {
     local _dirsString="$4"
     mkdir -p $_csync2CfgDir
     for __host in $_nodesString ; do
-        local _csync2CfgFile="$_csync2CfgDir/csync2_$(echo ${__host} | tr -d '._-').cfg"
+        local _csync2CfgFile="$_csync2CfgDir/csync2_$(echo ${__host} | tr -d '._-' | tr [A-Z] [a-z] ).cfg"
         echo -e "group mycluster \n{" > $_csync2CfgFile
         for _host in $_nodesString ; do
             if [  "$_host" != "$__host" ] ; then
@@ -152,7 +152,7 @@ function createLsyncConf {
     local _lsyncdCfgFile=$1
     local _nodeName=$2
     local _dirsString=$3
-    _confName=$(echo $_nodeName | tr -d '._-')
+    _confName=$(echo $_nodeName | tr -d '._-' | tr [A-Z] [a-z])
 
     echo "configuration name: $_confName"
 cat << EOF > $_lsyncdCfgFile
