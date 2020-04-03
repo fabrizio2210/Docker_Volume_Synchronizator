@@ -7,7 +7,6 @@ set -x
 . /usr/local/bin/init.sh
 
 
-pids=$(cat /var/run/*.pid)
 sleep 5
 
 oldNodesString=$nodesString
@@ -17,6 +16,7 @@ while true ; do
   
   sleep 2
 
+  pids=$(cat /var/run/*.pid)
   for pid in $pids ; do
     if ! ps -e | grep -q " $pid " ; then
       echo "PID $pid not found, exit"
