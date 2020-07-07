@@ -15,6 +15,7 @@ cd vagrant-tools/
 vagrant ssh ${nodes[0]} -c "docker stack rm prova"
 sleep 20
 for _node in ${nodes[@]}; do
+#    vagrant ssh $_node -c "docker image rm docker_volume_synchronizer"
     vagrant ssh $_node -c "bash -c \"cd /vagrant/ ; docker build -t $image -f docker/x86_64/Dockerfile .\""
     let RC=$RC+$?
 done
@@ -25,6 +26,7 @@ for _node in ${nodes[@]}; do
     vagrant ssh $_node -c "docker volume rm prova_wp_content_async"
     vagrant ssh $_node -c "docker volume rm prova_db_data"
     vagrant ssh $_node -c "docker container prune --force"
+    vagrant ssh $_node -c "sudo rm -rf /var/mount1; sudo rm -rf /var/mount2;"
     vagrant ssh $_node -c "sudo mkdir -p /var/mount1; sudo mkdir -p /var/mount2;"
 done
 vagrant ssh ${nodes[0]} -c "docker network create --driver overlay $network"
