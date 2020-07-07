@@ -52,7 +52,7 @@ function findAllServicesOfStack {
 # r -> my_stack_async.1.p68azjagjt6vd5av0bxuxxt9s,my_stack_async.1.pfgdhfjhmkhtyrtgerfedas7t
 function findTaskOnHostOfService {
     local _service=$1
-    docker container ls -q --filter "label=com.docker.swarm.service.name=$_service" --format '{{printf "%s"  .Names }}' | tr '\n' ',' | sed 's/,$//'
+    docker container ls -q -a --filter "label=com.docker.swarm.service.name=$_service" --format '{{printf "%s"  .Names }}' | tr '\n' ',' | sed 's/,$//'
 }
 
 # Find all the mount points of a service
