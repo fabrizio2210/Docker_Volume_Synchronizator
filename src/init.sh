@@ -46,14 +46,6 @@ done
 
 [ -z "$mountpointsToSync" ] && echo "Mountpoints not found2" && exit 2
 
-# Find if this node will be a master
-master=0
-tasksService="$(findTaskOnHostOfService $serviceToSync)"
-if [ ! -z "$tasksService" ] ; then
-  echo "This node is a master"
-  master=1
-fi
-
 ###
 # create csync2 certificate
 if [ ! -e /etc/csync2_ssl_cert.pem ] ; then
@@ -72,36 +64,14 @@ nodesString=$(findServiceTasks $service)
 nodeName=$(findMyTaskName)
 createCsyncConfig "$csync2CfgDir" "$nodesString" "$keyFile" "$mountpointsToSync"
 
-if [ $master -eq 1 ] ; then
-# create lsyncd cfg
-    mkdir -p $(dirname $lsyncdCfgFile)
-    createLsyncConf "$lsyncdCfgFile" "$nodeName" "$mountpointsToSync"
-fi
-
-
-## prepare dirs to sync if they don't exists
-#for _dir in $(echo $mountpointsToSync | tr ',' '\n') ; do
-#  mkdir -p $_dir
-#done
 
 ###
 # Run csync2
 
 confName=$(echo $nodeName | tr -d '._-' | tr [A-Z] [a-z])
-stdbuf -oL csync2 -ii -v -N $nodeName -C $confName | sed -u -e 's/^/csync2: /' > /dev/stdout 2>&1 &
+stdbuf -oL csync2 -ii -v -N $nodeName -C $confName 2>&1 | sed -u -e 's/^/csync2: /' > /dev/null 2>&1 &
 csync2Pid=$!
 echo $csync2Pid > /var/run/csync2.pid
 
 echo "Started csync2 with pid $csync2Pid"
-
-###
-# run lsyncd
-
-if [ $master -eq 1 ] ; then
-    stdbuf -oL /usr/bin/lsyncd  -nodaemon -delay 5 $lsyncdCfgFile 2>&1 | sed -u -e 's/^/lsyncd: /' > /dev/stdout 2>&1 &
-    lsyncdPid=$!
-    echo $lsyncdPid > /var/run/lsyncd.pid
-    echo "Started lsyncd with pid $lsyncdPid"
-fi
-
 

@@ -17,3 +17,4 @@ while getopts "k:" opt; do
 done
 
 [ -z "$key" ] && echo "Key is missing, define with -k" && exit 1
+export key
