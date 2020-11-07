@@ -48,6 +48,7 @@ export -f findTaskOnHostOfService
 export -f findServiceTasks
 export -f createCsyncConfig
 export service
+export stack
 export csync2CfgDir
 export nodesString
 export keyFile
@@ -58,7 +59,7 @@ export mountpointsToSync
 
 
 date
-curl -s -N --unix-socket /var/run/docker.sock http://localhost/events | grep --line-buffer '\("status":"start".\+"Type":"container"\)\|\("status":"exec_die".\+"Type":"container"\)\|\("Type":"service"\)\|\("Type":"node"\)' | grep --line-buffer $service | xargs -L 1 bash -c 'set -x ; date; sleep 60 ; watchLsyncConf ; watchNodesConf' > /dev/stdout 2>&1 &
+curl -s -N --unix-socket /var/run/docker.sock http://localhost/events | grep --line-buffer '\("status":"start".\+"Type":"container"\)\|\("status":"exec_die".\+"Type":"container"\)\|\("Type":"service"\)\|\("Type":"node"\)' | grep --line-buffer $stack | xargs -L 1 bash -c 'set -x ; date; sleep 60 ; watchLsyncConf ; watchNodesConf' > /dev/stdout 2>&1 &
 
 watchLsyncConf
 
